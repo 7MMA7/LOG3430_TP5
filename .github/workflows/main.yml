@@ -23,3 +23,15 @@ jobs:
           python server.py &
           echo "Waiting for Flask server to start"
           sleep 30
+      - name: Replace 'weight =' occurrences in locustfile.py
+        run: |
+          sed -i '0,/weight = [0-9]*/!{s/weight = [0-9]*/weight = 0/}' locustfile.py
+      - name: Verify weight changes
+        run: |
+          cat locustfile.py
+      - name: Run Locust tests
+        run: |
+          locust -f locustfile.py --host=http://127.0.0.1:5000 --users 10000 --spawn-rate 100 --headless -t 2m
+      - name: Stop Flask server
+        run: |
+          pkill -f "python server.py"
